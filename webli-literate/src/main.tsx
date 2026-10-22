@@ -1,3 +1,4 @@
+import './index.css';
 import React,{useEffect,useState} from 'react';import ReactDOM from 'react-dom/client';import {BrowserRouter,Routes,Route,Link,Navigate} from 'react-router-dom';
 import AuthGuard,{useSession} from './components/AuthGuard';import BrandLogo from './components/BrandLogo';import Login from './pages/Login';import Home from './pages/Home';import Books from './pages/Books';import BookDetail from './pages/BookDetail';import Cart from './pages/Cart';import Purchases from './pages/Purchases';import OrderSuccess from './pages/OrderSuccess';import {Policy,Contact} from './pages/Info';
 import AdminLayout,{AdminGuard} from './pages/admin/AdminLayout';import Dashboard from './pages/admin/Dashboard';import {BookList,BookForm} from './pages/admin/AdminBooks';import AdminOrders from './pages/admin/AdminOrders';import {Categories,Settings} from './pages/admin/AdminMisc';
