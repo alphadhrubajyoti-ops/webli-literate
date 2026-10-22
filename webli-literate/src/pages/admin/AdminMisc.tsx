@@ -1,0 +1,11 @@
+import {useEffect,useState} from 'react';import {supabase} from '../../lib/supabase';import {audit} from '../../lib/admin';
+export function Categories(){const [rows,setRows]=useState<any[]>([]);const [n,setN]=useState('');const [err,setErr]=useState('');
+ const load=()=>supabase.from('categories').select('*').order('name').then(({data})=>setRows(data||[]));useEffect(()=>{load()},[]);
+ const add=async()=>{if(!n.trim())return setErr('Name required');const {error}=await supabase.from('categories').insert({name:n.trim()});error?setErr(error.message):(setN(''),setErr(''),audit('category_add',{name:n}),load())};
+ const del=async(c:any)=>{const {error}=await supabase.from('categories').delete().eq('id',c.id);error?setErr(error.message):(audit('category_delete',{name:c.name}),load())};
+ return <div><h2>Categories</h2><input value={n} onChange={e=>setN(e.target.value)} placeholder="New category"/> <button onClick={add}>Add</button>{err&&<p role="alert">{err}</p>}{rows.map(c=><p key={c.id}>{c.name} <button onClick={()=>del(c)}>Delete</button></p>)}</div>}
+export const SETTING_KEYS=[['support_email','Support email'],['contact_info','Store contact information'],['policy_terms','Terms and Conditions'],['policy_privacy','Privacy Policy'],['policy_refund','Refund and Cancellation Policy'],['policy_copyright','Digital Product Usage and Copyright Policy']];
+export function Settings(){const [v,setV]=useState<Record<string,string>>({});const [msg,setMsg]=useState('');
+ useEffect(()=>{supabase.from('store_settings').select('*').then(({data})=>setV(Object.fromEntries((data||[]).map((r:any)=>[r.key,r.value]))))},[]);
+ const save=async()=>{const {error}=await supabase.from('store_settings').upsert(SETTING_KEYS.map(([k])=>({key:k,value:v[k]||''})));setMsg(error?error.message:'Saved.');if(!error)audit('settings_update')};
+ return <div style={{maxWidth:640}}><h2>Store settings</h2><p><small>WhatsApp number is set in src/lib/brand.ts. Payment keys are server-side secrets and are never edited here.</small></p>{SETTING_KEYS.map(([k,t])=><label key={k} style={{display:'block',margin:'8px 0'}}>{t}<br/><textarea rows={k.startsWith('policy')?6:2} style={{width:'100%'}} value={v[k]||''} onChange={e=>setV({...v,[k]:e.target.value})}/></label>)}<button onClick={save}>Save settings</button>{msg&&<p role="status">{msg}</p>}</div>}
