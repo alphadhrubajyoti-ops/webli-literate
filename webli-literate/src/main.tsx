@@ -1,16 +1,83 @@
 import './index.css';
-import React,{useEffect,useState} from 'react';import ReactDOM from 'react-dom/client';import {BrowserRouter,Routes,Route,Link,Navigate} from 'react-router-dom';
-import AuthGuard,{useSession} from './components/AuthGuard';import BrandLogo from './components/BrandLogo';import Login from './pages/Login';import Home from './pages/Home';import Books from './pages/Books';import BookDetail from './pages/BookDetail';import Cart from './pages/Cart';import Purchases from './pages/Purchases';import OrderSuccess from './pages/OrderSuccess';import {Policy,Contact} from './pages/Info';
-import AdminLayout,{AdminGuard} from './pages/admin/AdminLayout';import Dashboard from './pages/admin/Dashboard';import {BookList,BookForm} from './pages/admin/AdminBooks';import AdminOrders from './pages/admin/AdminOrders';import {Categories,Settings} from './pages/admin/AdminMisc';
-import {supabase} from './lib/supabase';import {useCart} from './lib/cart';
-function Layout({children}:{children:React.ReactNode}){const n=useCart().length;const {session}=useSession();const [adm,setAdm]=useState(false);
- useEffect(()=>{supabase.rpc('is_admin').then(({data})=>setAdm(data===true))},[]);
- return <><header style={{display:'flex',flexWrap:'wrap',gap:16,alignItems:'center',padding:'8px 16px',borderBottom:'1px solid #eee'}}><Link to="/"><BrandLogo/></Link>
- <nav style={{display:'flex',flexWrap:'wrap',gap:16}}><Link to="/">Home</Link><Link to="/books">Books</Link><Link to="/cart">Purchase{n>0&&` (${n})`}</Link><Link to="/contact">Contact Us</Link><Link to="/purchases">My Purchases</Link>{adm&&<Link to="/admin">Admin</Link>}</nav>
- {session&&<button style={{marginLeft:'auto'}} onClick={()=>supabase.auth.signOut()}>Sign out</button>}</header>{children}
- <footer style={{padding:16,borderTop:'1px solid #eee',marginTop:32,display:'flex',flexWrap:'wrap',gap:16}}><Link to="/policy/terms">Terms</Link><Link to="/policy/privacy">Privacy</Link><Link to="/policy/refund">Refunds</Link><Link to="/policy/copyright">Copyright</Link><span>© Webli Literate</span></footer></>}
-const P=({c}:{c:React.ReactNode})=><AuthGuard><Layout>{c}</Layout></AuthGuard>;
-ReactDOM.createRoot(document.getElementById('root')!).render(<BrowserRouter><Routes><Route path="/login" element={<Login/>}/><Route path="/" element={<P c={<Home/>}/>}/><Route path="/books" element={<P c={<Books/>}/>}/><Route path="/books/:id" element={<P c={<BookDetail/>}/>}/>
-<Route path="/cart" element={<P c={<Cart/>}/>}/><Route path="/purchases" element={<P c={<Purchases/>}/>}/><Route path="/order/:reference" element={<P c={<OrderSuccess/>}/>}/><Route path="/contact" element={<P c={<Contact/>}/>}/><Route path="/policy/:key" element={<P c={<Policy/>}/>}/>
-<Route path="/admin" element={<AuthGuard><AdminGuard><AdminLayout/></AdminGuard></AuthGuard>}><Route index element={<Dashboard/>}/><Route path="books" element={<BookList/>}/><Route path="books/:id" element={<BookForm/>}/><Route path="orders" element={<AdminOrders/>}/><Route path="categories" element={<Categories/>}/><Route path="settings" element={<Settings/>}/></Route>
-<Route path="*" element={<Navigate to="/" replace/>}/></Routes></BrowserRouter>);
+import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
+import AuthGuard, { useSession } from './components/AuthGuard';
+import BrandLogo from './components/BrandLogo';
+import Login from './pages/Login';
+import Home from './pages/Home';
+import Books from './pages/Books';
+import BookDetail from './pages/BookDetail';
+import Cart from './pages/Cart';
+import Purchases from './pages/Purchases';
+import OrderSuccess from './pages/OrderSuccess';
+import { Policy, Contact } from './pages/Info';
+import AdminLayout, { AdminGuard } from './pages/admin/AdminLayout';
+import Dashboard from './pages/admin/Dashboard';
+import { BookList, BookForm } from './pages/admin/AdminBooks';
+import AdminOrders from './pages/admin/AdminOrders';
+import { Categories, Settings } from './pages/admin/AdminMisc';
+import { supabase } from './lib/supabase';
+import { useCart } from './lib/cart';
+
+function Layout({ children }: { children: React.ReactNode }) {
+  const n = useCart().length;
+  const { session } = useSession();
+  const [adm, setAdm] = useState(false);
+
+  useEffect(() => {
+    supabase.rpc('is_admin').then(({ data }) => setAdm(data === true));
+  }, []);
+
+  return (
+    <>
+      <header style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', padding: '8px 16px', borderBottom: '1px solid #eee' }}>
+        <Link to="/"><BrandLogo /></Link>
+        <nav style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+          <Link to="/">Home</Link>
+          <Link to="/books">Books</Link>
+          <Link to="/cart">Purchase{n > 0 && ` (${n})`}</Link>
+          <Link to="/contact">Contact Us</Link>
+          <Link to="/purchases">My Purchases</Link>
+          {adm && <Link to="/admin">Admin</Link>}
+        </nav>
+        {session && <button style={{ marginLeft: 'auto' }} onClick={() => supabase.auth.signOut()}>Sign out</button>}
+      </header>
+      {children}
+      <footer style={{ padding: 16, borderTop: '1px solid #eee', marginTop: 32, display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+        <Link to="/policy/terms">Terms</Link>
+        <Link to="/policy/privacy">Privacy</Link>
+        <Link to="/policy/refund">Refunds</Link>
+        <Link to="/policy/copyright">Copyright</Link>
+        <span>© Webli Literate</span>
+      </footer>
+    </>
+  );
+}
+
+const P = ({ c }: { c: React.ReactNode }) => <AuthGuard><Layout>{c}</Layout></AuthGuard>;
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <BrowserRouter>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<P c={<Home />} />} />
+      <Route path="/books" element={<P c={<Books />} />} />
+      <Route path="/books/:id" element={<P c={<BookDetail />} />} />
+      <Route path="/cart" element={<P c={<Cart />} />} />
+      <Route path="/purchases" element={<P c={<Purchases />} />} />
+      <Route path="/order/:reference" element={<P c={<OrderSuccess />} />} />
+      <Route path="/contact" element={<P c={<Contact />} />} />
+      <Route path="/policy/:key" element={<P c={<Policy />} />} />
+      <Route path="/admin" element={<AuthGuard><AdminGuard><AdminLayout /></AdminGuard></AuthGuard>}>
+        <Route index element={<Dashboard />} />
+        <Route path="books" element={<BookList />} />
+        <Route path="books/:id" element={<BookForm />} />
+        <Route path="orders" element={<AdminOrders />} />
+        <Route path="categories" element={<Categories />} />
+        <Route path="settings" element={<Settings />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  </BrowserRouter>
+);
