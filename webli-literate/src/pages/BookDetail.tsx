@@ -1,0 +1,18 @@
+import {useEffect,useState} from 'react';import {useNavigate,useParams,Link} from 'react-router-dom';import {ChevronLeft,ShoppingCart,Zap,MessageCircle} from 'lucide-react';import {supabase} from '../lib/supabase';import {waLink} from '../lib/brand';import {cartIds,setCart} from '../lib/cart';import {BookCover,Price,Loading,Alert} from '../components/ui';
+export default function BookDetail(){const {id}=useParams();const nav=useNavigate();const [b,setB]=useState<any>(null);const [err,setErr]=useState('');const [zoom,setZoom]=useState('');
+ useEffect(()=>{supabase.from('books').select('*,categories(name)').eq('id',id).eq('published',true).eq('archived',false).maybeSingle().then(({data,error})=>error?setErr(error.message):data?setB(data):setErr('This book is not available.'))},[id]);
+ if(err)return <div className="container-page py-10"><Alert>{err} <Link to="/books" className="font-semibold underline">Browse books</Link></Alert></div>;if(!b)return <Loading/>;
+ const add=()=>setCart([...cartIds(),b.id]);
+ const meta=[b.categories?.name,b.language,b.page_count&&`${b.page_count} pages`,'PDF'].filter(Boolean) as string[];
+ return <article className="container-page py-8"><Link to="/books" className="mb-5 inline-flex items-center gap-1 text-sm font-semibold text-brand-700 hover:underline"><ChevronLeft size={16} aria-hidden="true"/>All books</Link>
+ <div className="grid gap-8 md:grid-cols-[minmax(240px,340px)_1fr] lg:gap-12">
+  <div><div className="card p-3 md:sticky md:top-24"><BookCover url={b.cover_url} title={b.title}/></div></div>
+  <div className="max-w-2xl"><h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">{b.title}</h1><p className="mt-2 text-lg text-slate-600">by {b.author}</p>
+   <div className="mt-4 flex flex-wrap gap-2">{meta.map(m=><span key={m} className="badge badge-info">{m}</span>)}</div>
+   <div className="mt-6"><Price o={b.original_price_paise} d={b.discount_percent} s={b.sale_price_paise} large/></div>
+   <div className="mt-5 flex flex-wrap gap-3">{b.purchasable?<><button className="btn btn-accent btn-lg" onClick={()=>{add();nav('/cart')}}><Zap size={18} aria-hidden="true"/>Buy Now</button><button className="btn btn-outline btn-lg" onClick={add}><ShoppingCart size={18} aria-hidden="true"/>Add to Cart</button></>:<Alert kind="info">Not currently available for purchase.</Alert>}
+    <a className="btn btn-whatsapp btn-lg" href={waLink(`Hi, I want to buy this book: ${b.title}. ${location.href}`)} target="_blank" rel="noreferrer"><MessageCircle size={18} aria-hidden="true"/>Buy through WhatsApp</a></div>
+   {b.description&&<div className="mt-8"><h2 className="text-lg font-extrabold">About this book</h2><p className="mt-2 whitespace-pre-wrap leading-relaxed text-slate-700">{b.description}</p></div>}
+   {b.preview_urls?.length>0&&<div className="mt-8"><h2 className="text-lg font-extrabold">Sample pages</h2><div className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">{b.preview_urls.map((u:string)=>/\.pdf($|\?)/i.test(u)?<iframe key={u} src={u} title="Sample PDF" className="h-[420px] w-[90%] shrink-0 snap-start rounded-lg border border-brand-100 bg-white"/>:<img key={u} src={u} alt="Sample page" loading="lazy" onClick={()=>setZoom(u)} className="h-80 shrink-0 cursor-zoom-in snap-start rounded-lg border border-brand-100 bg-white shadow-card"/>)}</div></div>}
+  </div></div>
+ {zoom&&<div role="dialog" aria-label="Sample page" onClick={()=>setZoom('')} className="fixed inset-0 z-50 grid cursor-zoom-out place-items-center overflow-auto bg-ink/80 p-4"><img src={zoom} alt="Sample page enlarged" className="max-h-[96vh] max-w-[96vw] rounded-lg bg-white"/></div>}</article>}
